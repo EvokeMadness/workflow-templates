@@ -1,9 +1,9 @@
-name: md-to-html
+name: reusable-md-to-html
 
-on: push
+on: workflow_call
 
 jobs:
-  convert_via_pandoc:
+  convert-via-pandoc:
     runs-on: ubuntu-latest
 
     permissions:
@@ -14,14 +14,17 @@ jobs:
 
       - name: Filter README.md
         run: awk '/^\* \* \*$/ {hr=!hr; next} hr' README.md > tmp.md
+        
+      - name: mkdir docs/
+        run: mkdir -p docs
 
       - name: Pandoc output Standalone HTML file
         run: |
           docker run --rm -v "${PWD}:/data" \
-          pandoc/core:3.8 -s /data/tmp.md -o /data/description.html
+          pandoc/core:3.8 -s /data/tmp.md -o /data/docs/description.html
 
       - name: Commit and push description.html
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Generate description.html from README.md"
-          file_pattern: description.html
+          file_pattern: docs/description.html
